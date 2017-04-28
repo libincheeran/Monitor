@@ -1,0 +1,68 @@
+# Global configs
+monitor :
+ global :
+  url : https://dp-csapp-01:7401/carbon
+  login: 
+   url: https://dp-csapp-01:7401/carbon
+   uname: admin
+   pwd: wso2esb2014 
+   pwd-file: 
+
+
+
+# Specific Service config 
+# all time units are in milliseconds.
+ services:
+ - service: 
+    name: EcomPatientWSv1
+    # url field is optional
+    url:
+    avg-warn-res-time:
+    avg-crit-res-time: 3000
+    msg-warn-pending:
+    msg-crit-pending: 300
+
+ - service: 
+    name: hmsValidation
+    avg-warn-res-time:
+    avg-crit-res-time: 2000
+    msg-warn-pending:
+    msg-crit-pending: 10000
+    
+ - service: 
+    name: PdmpRequestRouter
+    avg-warn-res-time:
+    avg-crit-res-time: 10000
+    msg-warn-pending:
+    msg-crit-pending: 500
+    
+ - service: 
+    name: PdxRequestRouter
+    avg-warn-res-time:
+    avg-crit-res-time: 3000
+    msg-warn-pending:
+    msg-crit-pending: 1000
+    
+    
+ - service: 
+    name: PriorAuthServicev1
+    avg-warn-res-time:
+    avg-crit-res-time: 3000
+    msg-warn-pending:
+    msg-crit-pending: 300
+    
+    
+ - service: 
+    name: RCPSServiceMediator
+    avg-warn-res-time:
+    avg-crit-res-time: 3000
+    msg-warn-pending:
+    msg-crit-pending: 500
+    
+    
+ - service: 
+    name: SbmoInventoryUpdate
+    avg-warn-res-time:
+    avg-crit-res-time: 120000
+    msg-warn-pending:
+    msg-crit-pending: 5000
