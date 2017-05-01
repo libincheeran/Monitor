@@ -87,10 +87,10 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService{
 			HtmlInput pwd = (HtmlInput) page1.getElementByName(INPUT_PASSWORD);
 			
 			// retrieve pwd and decrypt
-			ObfuscationInputFile in1 = new ObfuscationInputFile(new RandomAccessFile(OBF_FIle, "r"));
-	        byte[] inBuffer1 = in1.readBlock();
-	        in1.close();
-	        String inString1 = new String(inBuffer1, "UTF-8");
+			ObfuscationInputFile in = new ObfuscationInputFile(new RandomAccessFile(OBF_FIle, "r"));
+	        byte[] inBuffer = in.readBlock();
+	        in.close();
+	        String inString1 = new String(inBuffer, "UTF-8");
 	        DecryptionService de = new EncryptionServiceImpl();
 	        String decryptedPwd = de.decrypt(inString1, wso2Config.getMonitor().getGlobal().getLogin().getKey());	        
 			pwd.setValueAttribute(decryptedPwd);
