@@ -5,8 +5,9 @@ monitor :
   login: 
    url: https://dp-csapp-01:7401/carbon
    uname: admin
-   pwd: wso2esb2014 
-   pwd-file: 
+   pwd: 
+   pwd-file:
+   encryption-key: wso17monito_r$23 
 
 
 

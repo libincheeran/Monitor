@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({ "url", "uname", "pwd","pwd-file"})
+@JsonPropertyOrder({ "url", "uname", "pwd","pwd-file","encryption-key"})
 @Data
 public class Login {
 	@JsonProperty("url")
@@ -21,4 +21,8 @@ public class Login {
 	
 	@JsonProperty("pwd-file")
 	private String pwd_file;
+	
+	@JsonProperty("encryption-key")
+	private String key;
+	
 }

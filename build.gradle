@@ -28,7 +28,7 @@ task fatJar(type: Jar) {
         	'Implementation-Version': version,
         	'Main-Class': 'com.pdx.cs.monitor.core.MonitorApp'
     }
-    baseName = project.name + '-all'
+    baseName = project.name + '-fat'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
@@ -40,7 +40,6 @@ dependencies {
    compile 'com.fasterxml.jackson.core:jackson-databind:2.2.3'
    compile 'org.projectlombok:lombok:1.16.16'
    compile 'org.seleniumhq.selenium:selenium-htmlunit-driver:2.52.0'
-   
-   
+   compile 'com.pdxinc.sec:pdxsec:1.0.46' 
 }
 

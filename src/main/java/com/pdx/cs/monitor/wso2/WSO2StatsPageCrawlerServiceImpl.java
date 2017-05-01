@@ -1,5 +1,6 @@
 package com.pdx.cs.monitor.wso2;
 
+import java.io.RandomAccessFile;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -19,13 +20,17 @@ import com.pdx.cs.monitor.core.ParseService;
 import com.pdx.cs.monitor.core.ReportService;
 import com.pdx.cs.monitor.wso2.config.Service;
 import com.pdx.cs.monitor.wso2.config.WSO2Config;
+import com.pdxinc.sec.DecryptionService;
+import com.pdxinc.sec.EncryptionServiceImpl;
+import com.pdxinc.sec.ObfuscationInputFile;
 
 public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService{
 	private static final Logger logger = LoggerFactory.getLogger(WSO2StatsPageCrawlerServiceImpl.class);
 	private static final String INPUT_USER_NAME = "username";
 	private static final String INPUT_PASSWORD = "password";
 	private static final String INPUT_SIGN_IN = "Sign-in";
-	private static final String STAT_URL = "statistics/service_stats_ajaxprocessor.jsp?serviceName=";
+	private static final String STAT_URL = "/statistics/service_stats_ajaxprocessor.jsp?serviceName=";
+	private static final String OBF_FIle="config/file.obf";
 	private final WSO2Config wso2Config;
 	private final ParseService parseService;
 	private final ReportService reportService;
@@ -52,11 +57,11 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService{
 
 	private String crawlServices(Service s) throws MonitorException {
 		try {
-			String url = this.wso2Config.getMonitor().getGlobal().getUrl() + "/"
-					+ "statistics/service_stats_ajaxprocessor.jsp?serviceName=" + s.getService().getName();
+			String url = this.wso2Config.getMonitor().getGlobal().getUrl()
+					+ STAT_URL + s.getService().getName();
 
 			logger.debug(url);
-			HtmlPage page3 = (HtmlPage) this.webClient.getPage(url);
+			HtmlPage page3 = (HtmlPage) webClient.getPage(url);
 
 			logger.debug(page3.asText());
 
@@ -68,21 +73,30 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService{
 
 	private void login() throws MonitorException {
 		try {
-			this.webClient = new WebClient();
+			webClient = new WebClient();
 
-			this.webClient.getOptions().setUseInsecureSSL(true);
-			this.webClient.getOptions().setJavaScriptEnabled(false);
-			HtmlPage page1 = (HtmlPage) this.webClient.getPage(this.wso2Config.getMonitor().getGlobal().getUrl());
+			webClient.getOptions().setUseInsecureSSL(true);
+			webClient.getOptions().setJavaScriptEnabled(false);
+			HtmlPage page1 = (HtmlPage)webClient.getPage(wso2Config.getMonitor().getGlobal().getUrl());
 			CookieManager cookieMan = new CookieManager();
-			cookieMan = this.webClient.getCookieManager();
+			cookieMan = webClient.getCookieManager();
 			cookieMan.setCookiesEnabled(true);
 
-			HtmlInput uname = (HtmlInput) page1.getElementByName("username");
+			HtmlInput uname = (HtmlInput) page1.getElementByName(INPUT_USER_NAME);
 			uname.setValueAttribute(this.wso2Config.getMonitor().getGlobal().getLogin().getUname());
-			HtmlInput pwd = (HtmlInput) page1.getElementByName("password");
-			pwd.setValueAttribute(this.wso2Config.getMonitor().getGlobal().getLogin().getPwd());
+			HtmlInput pwd = (HtmlInput) page1.getElementByName(INPUT_PASSWORD);
+			
+			// retrieve pwd and decrypt
+			ObfuscationInputFile in1 = new ObfuscationInputFile(new RandomAccessFile(OBF_FIle, "r"));
+	        byte[] inBuffer1 = in1.readBlock();
+	        in1.close();
+	        String inString1 = new String(inBuffer1, "UTF-8");
+	        DecryptionService de = new EncryptionServiceImpl();
+	        String decryptedPwd = de.decrypt(inString1, wso2Config.getMonitor().getGlobal().getLogin().getKey());	        
+			pwd.setValueAttribute(decryptedPwd);
+			
 			HtmlForm form = (HtmlForm) page1.getForms().get(0);
-			HtmlSubmitInput submit = (HtmlSubmitInput) form.getInputByValue("Sign-in");
+			HtmlSubmitInput submit = (HtmlSubmitInput) form.getInputByValue(INPUT_SIGN_IN);
 			submit.click();
 		} catch (Exception e) {
 			throw new MonitorException(e.getMessage(), e);
@@ -93,8 +107,8 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService{
 	}
 
 	public void destroy() {
-		if (this.webClient != null)
-			this.webClient.close();
+		if (webClient != null)
+			webClient.close();
 	}
 
 }
