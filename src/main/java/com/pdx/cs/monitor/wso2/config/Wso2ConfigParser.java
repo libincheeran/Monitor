@@ -1,4 +1,3 @@
-/*** Eclipse Class Decompiler plugin, copyright (c) 2016 Chen Chao (cnfree2000@hotmail.com) ***/
 package com.pdx.cs.monitor.wso2.config;
 
 import java.io.File;
@@ -16,7 +15,7 @@ public class Wso2ConfigParser {
 	public static WSO2Config getWSO2Config() {
 		ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 		try {
-			File f = new File("config/wso2_service_monitor.yml");
+			File f = new File(CONFIG_FILE);
 			WSO2Config conf = (WSO2Config) mapper.readValue(f, WSO2Config.class);
 			logger.debug("Config : " + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(conf));
 			return conf;
