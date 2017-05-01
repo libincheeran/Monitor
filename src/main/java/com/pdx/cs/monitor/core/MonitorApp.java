@@ -18,7 +18,6 @@ public class MonitorApp {
 			monitor.run();
 		} catch (MonitorException e) {
 			logger.error(e.getMessage(), e);
-			e.printStackTrace();
 		}
 	}
 }

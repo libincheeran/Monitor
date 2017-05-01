@@ -8,7 +8,7 @@ import lombok.Data;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({ "msg-crit-pending", "avg-warn-res-time", "name", "url", "avg-crit-res-time", "msg-warn-pending" })
-@Data 
+@Data
 public class Service_ {
 	@JsonProperty("msg-crit-pending")
 	private long msgCritPending;

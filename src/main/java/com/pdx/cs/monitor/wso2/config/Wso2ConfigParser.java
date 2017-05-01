@@ -25,8 +25,4 @@ public class Wso2ConfigParser {
 		}
 		return null;
 	}
-	
-	public static void main(String[] args ){
-		Wso2ConfigParser.getWSO2Config();
-	}
 }

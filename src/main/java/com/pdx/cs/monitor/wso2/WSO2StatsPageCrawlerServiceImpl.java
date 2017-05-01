@@ -24,13 +24,13 @@ import com.pdxinc.sec.DecryptionService;
 import com.pdxinc.sec.EncryptionServiceImpl;
 import com.pdxinc.sec.ObfuscationInputFile;
 
-public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService{
+public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService {
 	private static final Logger logger = LoggerFactory.getLogger(WSO2StatsPageCrawlerServiceImpl.class);
 	private static final String INPUT_USER_NAME = "username";
 	private static final String INPUT_PASSWORD = "password";
 	private static final String INPUT_SIGN_IN = "Sign-in";
 	private static final String STAT_URL = "/statistics/service_stats_ajaxprocessor.jsp?serviceName=";
-	private static final String OBF_FIle="config/file.obf";
+	private static final String OBF_FIle = "config/file.obf";
 	private final WSO2Config wso2Config;
 	private final ParseService parseService;
 	private final ReportService reportService;
@@ -57,14 +57,10 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService{
 
 	private String crawlServices(Service s) throws MonitorException {
 		try {
-			String url = this.wso2Config.getMonitor().getGlobal().getUrl()
-					+ STAT_URL + s.getService().getName();
-
+			String url = this.wso2Config.getMonitor().getGlobal().getUrl() + STAT_URL + s.getService().getName();
 			logger.debug(url);
 			HtmlPage page3 = (HtmlPage) webClient.getPage(url);
-
 			logger.debug(page3.asText());
-
 			return page3.asText();
 		} catch (Exception e) {
 			throw new MonitorException(e.getMessage(), e);
@@ -77,7 +73,7 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService{
 
 			webClient.getOptions().setUseInsecureSSL(true);
 			webClient.getOptions().setJavaScriptEnabled(false);
-			HtmlPage page1 = (HtmlPage)webClient.getPage(wso2Config.getMonitor().getGlobal().getUrl());
+			HtmlPage page1 = (HtmlPage) webClient.getPage(wso2Config.getMonitor().getGlobal().getUrl());
 			CookieManager cookieMan = new CookieManager();
 			cookieMan = webClient.getCookieManager();
 			cookieMan.setCookiesEnabled(true);
@@ -85,16 +81,16 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService{
 			HtmlInput uname = (HtmlInput) page1.getElementByName(INPUT_USER_NAME);
 			uname.setValueAttribute(this.wso2Config.getMonitor().getGlobal().getLogin().getUname());
 			HtmlInput pwd = (HtmlInput) page1.getElementByName(INPUT_PASSWORD);
-			
+
 			// retrieve pwd and decrypt
 			ObfuscationInputFile in = new ObfuscationInputFile(new RandomAccessFile(OBF_FIle, "r"));
-	        byte[] inBuffer = in.readBlock();
-	        in.close();
-	        String inString1 = new String(inBuffer, "UTF-8");
-	        DecryptionService de = new EncryptionServiceImpl();
-	        String decryptedPwd = de.decrypt(inString1, wso2Config.getMonitor().getGlobal().getLogin().getKey());	        
+			byte[] inBuffer = in.readBlock();
+			in.close();
+			String inString1 = new String(inBuffer, "UTF-8");
+			DecryptionService de = new EncryptionServiceImpl();
+			String decryptedPwd = de.decrypt(inString1, wso2Config.getMonitor().getGlobal().getLogin().getKey());
 			pwd.setValueAttribute(decryptedPwd);
-			
+
 			HtmlForm form = (HtmlForm) page1.getForms().get(0);
 			HtmlSubmitInput submit = (HtmlSubmitInput) form.getInputByValue(INPUT_SIGN_IN);
 			submit.click();

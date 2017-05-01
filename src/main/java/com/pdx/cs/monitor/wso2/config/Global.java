@@ -10,7 +10,7 @@ import lombok.Data;
 @JsonPropertyOrder({ "url", "login" })
 @Data
 public class Global {
-	
+
 	@JsonProperty("url")
 	private String url;
 

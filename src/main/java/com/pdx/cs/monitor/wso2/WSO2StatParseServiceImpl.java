@@ -58,14 +58,12 @@ public class WSO2StatParseServiceImpl implements ParseService {
 			fmt.format(countFormat,
 					new Object[] { Long.valueOf(currReqCount), Long.valueOf(currResCount), HEALTH_BAD });
 		else {
-			fmt.format(countFormat,
-					new Object[] { Long.valueOf(currReqCount), Long.valueOf(currResCount), HEALTH_OK });
+			fmt.format(countFormat, new Object[] { Long.valueOf(currReqCount), Long.valueOf(currResCount), HEALTH_OK });
 		}
 
 		output.append("\n");
 		fmt.close();
 		return output.toString();
 	}
-
 
 }
