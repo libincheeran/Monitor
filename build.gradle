@@ -41,5 +41,6 @@ dependencies {
    compile 'org.projectlombok:lombok:1.16.16'
    compile 'org.seleniumhq.selenium:selenium-htmlunit-driver:2.52.0'
    compile 'com.pdxinc.sec:pdxsec:1.0.46' 
+   testCompile 'junit:junit:4.11'
 }
 
