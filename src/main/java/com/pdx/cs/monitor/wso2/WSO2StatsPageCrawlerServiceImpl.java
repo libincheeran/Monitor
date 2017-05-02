@@ -34,7 +34,6 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService {
 	private final WSO2Config wso2Config;
 	private final ParseService parseService;
 	private final ReportService reportService;
-	private WebClient webClient;
 
 	@Inject
 	public WSO2StatsPageCrawlerServiceImpl(WSO2Config config, ParseService parseService, ReportService reportService) {
@@ -44,18 +43,23 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService {
 	}
 
 	public void delegateCrawl() throws MonitorException {
-		login();
+		
+		try(WebClient webClient = login()) {
+			
+			List<Service> services = this.wso2Config.getMonitor().getServices();
 
-		List<Service> services = this.wso2Config.getMonitor().getServices();
-
-		for (Service s : services) {
-			String output = crawlServices(s);
-			String reportInput = this.parseService.parse(output, s.getService());
-			this.reportService.generateReport(reportInput);
+			for (Service s : services) {
+				String output = crawlServices(s,webClient);
+				String reportInput = this.parseService.parse(output, s.getService());
+				this.reportService.generateReport(reportInput);
+			}
+			
+		}catch (MonitorException e ){
+			throw e;
 		}
 	}
 
-	private String crawlServices(Service s) throws MonitorException {
+	private String crawlServices(Service s, WebClient webClient) throws MonitorException {
 		try {
 			String url = this.wso2Config.getMonitor().getGlobal().getUrl() + STAT_URL + s.getService().getName();
 			logger.debug(url);
@@ -67,7 +71,8 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService {
 		}
 	}
 
-	private void login() throws MonitorException {
+	private WebClient login() throws MonitorException {
+		WebClient webClient = null;
 		try {
 			webClient = new WebClient();
 
@@ -97,14 +102,13 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService {
 		} catch (Exception e) {
 			throw new MonitorException(e.getMessage(), e);
 		}
+		return webClient;
 	}
 
 	public void init() {
 	}
 
 	public void destroy() {
-		if (webClient != null)
-			webClient.close();
 	}
 
 }
