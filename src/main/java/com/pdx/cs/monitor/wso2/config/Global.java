@@ -6,13 +6,15 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import lombok.Data;
 
+import java.util.List;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({ "url", "login" })
 @Data
 public class Global {
 
-	@JsonProperty("url")
-	private String url;
+	@JsonProperty("urls")
+	private List<String> urls;
 
 	@JsonProperty("login")
 	private Login login;

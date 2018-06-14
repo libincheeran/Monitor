@@ -20,7 +20,7 @@ repositories {
    mavenCentral()
 }
 
-version = '1.0'
+version = '2.0.0'
 
 task fatJar(type: Jar) {
 	manifest {

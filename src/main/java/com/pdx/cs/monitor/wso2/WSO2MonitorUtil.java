@@ -1,5 +1,7 @@
 package com.pdx.cs.monitor.wso2;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,6 +15,16 @@ public class WSO2MonitorUtil {
 				f = Float.valueOf(Float.parseFloat(res));
 		}
 		return f.longValue();
+	}
+
+	public static String extractHostName(String url){
+		try {
+			URL jUrl = new URL(url);
+			return jUrl.getHost();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }

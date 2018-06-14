@@ -30,7 +30,8 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService {
 	private static final String INPUT_PASSWORD = "password";
 	private static final String INPUT_SIGN_IN = "Sign-in";
 	private static final String STAT_URL = "/statistics/service_stats_ajaxprocessor.jsp?serviceName=";
-	private static final String OBF_FIle = "config/file.obf";
+	private static final String OBF_FIle = "/file.obf";
+	private static String default_path = "config";
 	private final WSO2Config wso2Config;
 	private final ParseService parseService;
 	private final ReportService reportService;
@@ -43,25 +44,28 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService {
 	}
 
 	public void delegateCrawl() throws MonitorException {
-		
-		try(WebClient webClient = login()) {
-			
-			List<Service> services = this.wso2Config.getMonitor().getServices();
 
-			for (Service s : services) {
-				String output = crawlServices(s,webClient);
-				String reportInput = this.parseService.parse(output, s.getService());
-				this.reportService.generateReport(reportInput);
+		List<String> urls = this.wso2Config.getMonitor().getGlobal().getUrls();
+		for(String url : urls) {
+
+			try (WebClient webClient = login(url)) {
+
+				List<Service> services = this.wso2Config.getMonitor().getServices();
+				for (Service s : services) {
+					String output = crawlServices(s, webClient, url);
+					String reportInput = this.parseService.parse(output, s.getService(),url);
+					this.reportService.generateReport(reportInput);
+				}
+
+			} catch (MonitorException e) {
+				throw e;
 			}
-			
-		}catch (MonitorException e ){
-			throw e;
 		}
 	}
 
-	private String crawlServices(Service s, WebClient webClient) throws MonitorException {
+	private String crawlServices(Service s, WebClient webClient, String url) throws MonitorException {
 		try {
-			String url = this.wso2Config.getMonitor().getGlobal().getUrl() + STAT_URL + s.getService().getName();
+			url = url + STAT_URL + s.getService().getName();
 			logger.debug(url);
 			HtmlPage page3 = (HtmlPage) webClient.getPage(url);
 			logger.debug(page3.asText());
@@ -71,14 +75,14 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService {
 		}
 	}
 
-	private WebClient login() throws MonitorException {
+	private WebClient login(String url) throws MonitorException {
 		WebClient webClient = null;
 		try {
 			webClient = new WebClient();
 
 			webClient.getOptions().setUseInsecureSSL(true);
 			webClient.getOptions().setJavaScriptEnabled(false);
-			HtmlPage page1 = (HtmlPage) webClient.getPage(wso2Config.getMonitor().getGlobal().getUrl());
+			HtmlPage page1 = (HtmlPage) webClient.getPage(url);
 			CookieManager cookieMan = new CookieManager();
 			cookieMan = webClient.getCookieManager();
 			cookieMan.setCookiesEnabled(true);
@@ -87,8 +91,13 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService {
 			uname.setValueAttribute(this.wso2Config.getMonitor().getGlobal().getLogin().getUname());
 			HtmlInput pwd = (HtmlInput) page1.getElementByName(INPUT_PASSWORD);
 
+			String custom_path = System.getProperty("config.path");
+			if ((custom_path != null) && (!custom_path.isEmpty())) {
+				default_path = custom_path;
+			}
+
 			// retrieve pwd and decrypt
-			ObfuscationInputFile in = new ObfuscationInputFile(new RandomAccessFile(OBF_FIle, "r"));
+			ObfuscationInputFile in = new ObfuscationInputFile(new RandomAccessFile(default_path + OBF_FIle, "r"));
 			byte[] inBuffer = in.readBlock();
 			in.close();
 			String inString1 = new String(inBuffer, "UTF-8");
@@ -101,6 +110,9 @@ public class WSO2StatsPageCrawlerServiceImpl extends AbstractPageCrawlService {
 			submit.click();
 		} catch (Exception e) {
 			throw new MonitorException(e.getMessage(), e);
+		} finally {
+			if(webClient!= null)
+				webClient.close();
 		}
 		return webClient;
 	}

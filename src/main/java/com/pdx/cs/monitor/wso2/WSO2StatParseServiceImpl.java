@@ -6,6 +6,8 @@ import com.pdx.cs.monitor.core.MonitorException;
 import com.pdx.cs.monitor.core.ParseService;
 import com.pdx.cs.monitor.wso2.config.Service_;
 
+import static com.pdx.cs.monitor.wso2.WSO2MonitorUtil.extractHostName;
+
 public class WSO2StatParseServiceImpl implements ParseService {
 
 	private static final String HEALTH_OK = "HEALTH_OK";
@@ -13,11 +15,13 @@ public class WSO2StatParseServiceImpl implements ParseService {
 	private static final String AVG_RES_TIME = "Average Response Time";
 	private static final String REQ_COUNT = "Request Count";
 	private static final String RES_COUNT = "Response Count";
+	private static final String FAULT_COUNT = "Fault Count";
 
-	public String parse(String input, Service_ conf) throws MonitorException {
+	public String parse(String input, Service_ conf, String url) throws MonitorException {
 		long curAvgResTime = 0L;
 		long currReqCount = 0L;
 		long currResCount = 0L;
+		long currFaultCount = 0L;
 
 		String[] lines = input.split("\\n");
 
@@ -36,12 +40,18 @@ public class WSO2StatParseServiceImpl implements ParseService {
 					currResCount = val;
 				}
 
+			} else if ( line.indexOf(FAULT_COUNT) != -1){
+				long val = WSO2MonitorUtil.extractNumber(line);
+				if(val > 0L) {
+					currFaultCount = val;
+				}
 			}
 
 		}
 
 		StringBuilder output = new StringBuilder();
-		output.append("WSO2_SERVICE:").append(conf.getName()).append(":");
+		output.append("WSO2_SERVICE:").append(conf.getName()).append(":")
+				.append(extractHostName(url)).append(":");
 
 		String avgFormat = "AVG_RES_TIME=%d:%s";
 		Formatter fmt = new Formatter(output);
@@ -51,17 +61,18 @@ public class WSO2StatParseServiceImpl implements ParseService {
 			fmt.format(avgFormat, new Object[] { Long.valueOf(curAvgResTime), HEALTH_OK });
 		}
 		output.append("\n");
-		output.append("WSO2_SERVICE:").append(conf.getName()).append(":");
+/*		output.append("WSO2_SERVICE:").append(conf.getName()).append(":")
+		.append(extractHostName(url)).append(":");
 
-		String countFormat = "PENDING_MSG_COUNT-reqCount=%d,resCount=%d:%s";
-		if (Math.abs(currReqCount - currResCount) > conf.getMsgCritPending())
+		String countFormat = "PENDING_MSG_COUNT-reqCount=%d,resCount=%d:faultCount=%d:%s";
+		if (Math.abs(currReqCount - (currResCount + currFaultCount)) > conf.getMsgCritPending())
 			fmt.format(countFormat,
-					new Object[] { Long.valueOf(currReqCount), Long.valueOf(currResCount), HEALTH_BAD });
+					new Object[] { Long.valueOf(currReqCount), Long.valueOf(currResCount),Long.valueOf(currFaultCount), HEALTH_BAD });
 		else {
-			fmt.format(countFormat, new Object[] { Long.valueOf(currReqCount), Long.valueOf(currResCount), HEALTH_OK });
+			fmt.format(countFormat, new Object[] { Long.valueOf(currReqCount), Long.valueOf(currResCount),Long.valueOf(currFaultCount), HEALTH_OK });
 		}
+		output.append("\n");*/
 
-		output.append("\n");
 		fmt.close();
 		return output.toString();
 	}

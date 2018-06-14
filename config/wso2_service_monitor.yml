@@ -1,7 +1,9 @@
 # Global configs
 monitor :
  global :
-  url : https://dp-csapp-01:7401/carbon
+  urls :
+   - https://dp-csapp-01:7401/carbon
+   - https://ftw-app-clst-01:7401/carbon
   login: 
    url: https://dp-csapp-01:7401/carbon
    uname: admin
